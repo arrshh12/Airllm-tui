@@ -209,7 +209,7 @@ export function App({ bridge, config: initialConfig }) {
       const updatedConfig = { ...config, model_id: modelId, hf_token: hfToken, device: config.device };
       setConfig(updatedConfig);
       setNeedsModelInput(false);
-      await saveConfig(updatedConfig);
+      saveConfig(updatedConfig).catch(() => {});
       engine.loadModel(modelId, config.device, hfToken);
     },
     [config, engine]
