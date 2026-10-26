@@ -18,6 +18,14 @@ import { saveConfig, newSessionFilename } from '../utils/storage.js';
 import { buildPrompt } from '../utils/context.js';
 import { BANNER, COLORS, BOX, ICONS, MODEL_PRESETS, getVramColor } from './theme.js';
 
+let configWriteQueue = Promise.resolve();
+
+function queueSaveConfig(config) {
+  const write = configWriteQueue.then(() => saveConfig(config));
+  configWriteQueue = write.catch(() => {});
+  return write;
+}
+
 const ERROR_HINTS = {
   MODEL_NOT_FOUND: 'Check model ID and HF_TOKEN env var.',
   OOM: 'Try a smaller model or enable 4-bit compression.',
@@ -209,7 +217,7 @@ export function App({ bridge, config: initialConfig }) {
       const updatedConfig = { ...config, model_id: modelId, hf_token: hfToken, device: config.device };
       setConfig(updatedConfig);
       setNeedsModelInput(false);
-      await saveConfig(updatedConfig);
+      queueSaveConfig(updatedConfig).catch(() => {});
       engine.loadModel(modelId, config.device, hfToken);
     },
     [config, engine]
@@ -243,7 +251,7 @@ export function App({ bridge, config: initialConfig }) {
       addMessage('assistant', msg);
       const updatedConfig = { ...config, device: actual };
       setConfig(updatedConfig);
-      saveConfig(updatedConfig).catch(() => {});
+      queueSaveConfig(updatedConfig).catch(() => {});
     }
   }, [engine.deviceFallback]);
 
@@ -354,7 +362,7 @@ export function App({ bridge, config: initialConfig }) {
     (newParams) => {
       setParams(newParams);
       bridge.send('update_params', newParams);
-      saveConfig({ ...config, params: newParams }).catch(() => {});
+      queueSaveConfig({ ...config, params: newParams }).catch(() => {});
     },
     [bridge, config]
   );
@@ -364,7 +372,7 @@ export function App({ bridge, config: initialConfig }) {
       setSystemPrompt(newPrompt);
       const updatedConfig = { ...config, system_prompt: newPrompt };
       setConfig(updatedConfig);
-      saveConfig(updatedConfig).catch(() => {});
+      queueSaveConfig(updatedConfig).catch(() => {});
       setShowSystemPrompt(false);
     },
     [config]
