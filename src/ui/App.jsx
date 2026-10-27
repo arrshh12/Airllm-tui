@@ -217,7 +217,9 @@ export function App({ bridge, config: initialConfig }) {
       const updatedConfig = { ...config, model_id: modelId, hf_token: hfToken, device: config.device };
       setConfig(updatedConfig);
       setNeedsModelInput(false);
-      queueSaveConfig(updatedConfig).catch(() => {});
+      queueSaveConfig(updatedConfig).catch((error) => {
+        addMessage('assistant', `⚠ Warning: Failed to save configuration: ${error.message || error}`);
+      });
       engine.loadModel(modelId, config.device, hfToken);
     },
     [config, engine]
