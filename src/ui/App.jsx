@@ -364,7 +364,9 @@ export function App({ bridge, config: initialConfig }) {
     (newParams) => {
       setParams(newParams);
       bridge.send('update_params', newParams);
-      queueSaveConfig({ ...config, params: newParams }).catch(() => {});
+      const updatedConfig = { ...config, params: newParams };
+      setConfig(updatedConfig);
+      queueSaveConfig(updatedConfig).catch(() => {});
     },
     [bridge, config]
   );
