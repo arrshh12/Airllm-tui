@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { statSync } from 'node:fs';
 import { findSystemPython, getPythonExe, getVenvDir, detectDevice, NoPythonError } from '../utils/platform.js';
 
 export { NoPythonError };
